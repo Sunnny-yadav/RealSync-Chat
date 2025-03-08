@@ -5,6 +5,49 @@ import { Link } from 'react-router-dom';
 function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
 
+    // State for email and password
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+    });
+
+    // Handle input change
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value
+        }));
+    };
+
+    // Handle form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const response = await fetch(
+                'http://localhost:8000/api/v1/users/login',
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type" : "application/json"
+                    },
+                    body:JSON.stringify(formData)
+                }
+            );
+
+            const responseData = await response.json()
+            console.log(responseData)
+            if(response.ok){
+                console.log("login done")
+            }else{
+                throw new Error("error in getting response")
+            }
+        } catch (error) {
+            console.log("Error in login function",error)
+        }
+    };
+
     return (
         <div className="flex h-screen items-center justify-center bg-black px-4 sm:px-8 md:px-16 lg:px-32 xl:px-48">
             <div className="bg-[#1A1A1D] p-6 sm:p-10 md:p-12 rounded-2xl shadow-2xl w-full max-w-md border border-green-500">
@@ -12,7 +55,7 @@ function LoginPage() {
                     RealSync Chat
                 </h1>
 
-                <form className="flex flex-col space-y-4 sm:space-y-6">
+                <form className="flex flex-col space-y-4 sm:space-y-6" onSubmit={handleSubmit}>
                     {/* Email Field */}
                     <div>
                         <label htmlFor="email" className="block text-green-300 font-semibold mb-2">
@@ -21,6 +64,9 @@ function LoginPage() {
                         <input
                             type="email"
                             id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
                             placeholder="Enter your email"
                             className="w-full p-2 sm:p-3 border border-green-500 rounded-lg bg-transparent text-green-300 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
@@ -34,6 +80,9 @@ function LoginPage() {
                         <input
                             type={showPassword ? 'text' : 'password'}
                             id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
                             placeholder="Enter your password"
                             className="w-full p-2 sm:p-3 border border-green-500 rounded-lg bg-transparent text-green-300 placeholder-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
                         />

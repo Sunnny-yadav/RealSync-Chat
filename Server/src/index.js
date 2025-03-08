@@ -1,7 +1,9 @@
 import app from "./app.js"
 import { GetMongoDbConnnection } from "./db/index.js";
+import { ErrorHandeller } from "./utils/ErrorHandeller.js";
 
 const PORT = process.env.PORT; 
+app.use(ErrorHandeller)
 
 GetMongoDbConnnection()
 .then((res)=>{
