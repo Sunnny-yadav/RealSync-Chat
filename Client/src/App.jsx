@@ -1,12 +1,13 @@
 import {createBrowserRouter, createRoutesFromElements, Route, RouterProvider} from 'react-router-dom'
-import Home from "./components/Home"
-import Page from './components/page'
+import "./index.css"
+import LoginPage from './components/login'
+import RegisterPage from './components/register'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/"  element={<Home/>} />
-      <Route path="/home"  element={<Page/>} />
+      <Route path="/"  element={<LoginPage/>} />
+      <Route path="/register"  element={<RegisterPage/>} />
     </>
   )
 )
