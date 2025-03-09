@@ -17,9 +17,10 @@ app.use(cors(corsOption));
 
 // importing the routes 
 import userRouter from './Router/user.router.js'
+import chatRouter from './Router/chat.router.js'
 
 app.use("/api/v1/users",userRouter)
-
+app.use("/api/v1/chats", chatRouter)
 
 export default app;
 
