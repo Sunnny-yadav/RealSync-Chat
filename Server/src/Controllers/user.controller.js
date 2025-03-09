@@ -1,10 +1,10 @@
 import { User } from "../Models/user.Modle.js";
 import { AsyncHandeller } from "../utils/AsyncHandeller.js";
 import { upload_On_Cloudinary } from "../utils/Cloudinary.js";
-import {ApiResponse} from '../utils/ApiResponse.js'
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const register_user = AsyncHandeller(async (req, res, next) => {
-    console.log(req.body)
+  console.log(req.body);
   const { name, email, password } = req.body;
   const avatarPath = req.file?.path;
 
@@ -15,7 +15,7 @@ const register_user = AsyncHandeller(async (req, res, next) => {
   }
 
   const userAllreadyExit = await User.findOne({
-    $or: [{name}, {email}],
+    $or: [{ name }, { email }],
   });
 
   if (userAllreadyExit) {
@@ -48,55 +48,85 @@ const register_user = AsyncHandeller(async (req, res, next) => {
     });
   }
 
-  const Token = RegistrationData.generateAccessToken()
+  const Token = RegistrationData.generateAccessToken();
 
-  if(!Token){
+  if (!Token) {
     return next({
-       error:"Token generation failed while registration"
-    })
+      error: "Token generation failed while registration",
+    });
   }
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, {AccessToken:Token , user:RegistrationData}, "User Registration Successfull")
+      new ApiResponse(
+        200,
+        { AccessToken: Token, user: RegistrationData },
+        "User Registration Successfull"
+      )
     );
 });
 
-const loginUser = AsyncHandeller(async( req, res, next)=>{
-    const {email, password} = req.body;
+const loginUser = AsyncHandeller(async (req, res, next) => {
+  const { email, password } = req.body;
 
-    if(!email || !password){
-        return next({
-            message: "All fields are Required"
-        })
-    }
+  if (!email || !password) {
+    return next({
+      message: "All fields are Required",
+    });
+  }
 
-    const userFound = await User.findOne({email})
+  const userFound = await User.findOne({ email });
 
-    if(!userFound){
-        return next({
-            message:"user not found"
-        })
-    }
+  if (!userFound) {
+    return next({
+      message: "user not found",
+    });
+  }
 
-    const ispasswordValid = await userFound.isPasswordCorrect(password)
+  const ispasswordValid = await userFound.isPasswordCorrect(password);
 
-    if(!ispasswordValid){
-        return next({message:"password mismatch occur"})
-    }
+  if (!ispasswordValid) {
+    return next({ message: "password mismatch occur" });
+  }
 
-    const Token  = await userFound.generateAccessToken()
+  const Token = await userFound.generateAccessToken();
 
-    if(!Token){
-        return next({
-            Error:"Token generation failed in login operation"
-        })
-    }
+  if (!Token) {
+    return next({
+      Error: "Token generation failed in login operation",
+    });
+  }
 
-    return res.status(200).json(new ApiResponse(200,{AccessToken:Token},"Login successfull"))
-
-
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { AccessToken: Token }, "Login successfull"));
 });
 
-export { register_user ,loginUser};
+const getUsers = AsyncHandeller(async (req, res, next) => {
+  const keyword = req.query.search
+    ? {
+        $or: [
+          { name: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const users = await User.find({
+    ...keyword,
+    _id:{$ne:req.userData._id}
+  });
+
+  if (users.length === 0) {
+    return next({
+      message: "No User Found",
+    });
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "user Fetched Successfully"));
+});
+
+export { register_user, loginUser, getUsers };
