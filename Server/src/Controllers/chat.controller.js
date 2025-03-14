@@ -2,6 +2,8 @@ import { AsyncHandeller } from "../utils/AsyncHandeller.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Chat } from "../Models/chat.Modlel.js";
 
+//todo: accesschat will be later updated only to create chat and will check here if it already exist then return 
+
 const accessChat = AsyncHandeller(async (req, res, next) => {
   const { searchedUserId } = req.body;
   const { _id } = req.userData;
