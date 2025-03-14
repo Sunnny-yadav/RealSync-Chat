@@ -2,11 +2,13 @@ import {createBrowserRouter, createRoutesFromElements, Route, RouterProvider} fr
 import "./index.css"
 import LoginPage from './components/Forms/login'
 import RegisterPage from './components/Forms/register'
+import ChatPage from './components/Chat/chatPage'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/"  element={<LoginPage/>} />
+      <Route path="/chat"  element={<ChatPage/>} />
+      <Route path="/login"  element={<LoginPage/>} />
       <Route path="/register"  element={<RegisterPage/>} />
     </>
   )

@@ -4,7 +4,7 @@ import { upload_On_Cloudinary } from "../utils/Cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const register_user = AsyncHandeller(async (req, res, next) => {
-  console.log(req.body);
+  
   const { name, email, password } = req.body;
   const avatarPath = req.file?.path;
 
@@ -103,6 +103,19 @@ const loginUser = AsyncHandeller(async (req, res, next) => {
     .json(new ApiResponse(200, { AccessToken: Token }, "Login successfull"));
 });
 
+const logedInUserData = AsyncHandeller(async (req, res,next)=>{
+  const {_id} = req.userData;
+
+  const userdata = await User.findOne(_id)
+  if( !userdata){
+    return next({
+      message:"Error while fetching loggedin user data"
+    })
+  };
+
+  return res.status(200).json(new ApiResponse(200,userdata, "user Data fetched succesfully"))
+})
+
 const getUsers = AsyncHandeller(async (req, res, next) => {
   const keyword = req.query.search
     ? {
@@ -129,4 +142,4 @@ const getUsers = AsyncHandeller(async (req, res, next) => {
     .json(new ApiResponse(200, users, "user Fetched Successfully"));
 });
 
-export { register_user, loginUser, getUsers };
+export { register_user, loginUser, getUsers, logedInUserData };

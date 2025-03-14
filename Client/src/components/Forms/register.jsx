@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useUserContext } from '../../context/auth.context';
+
 
 function RegisterPage() {
     const [registrationData, setregistrationData] = useState({
@@ -10,6 +13,8 @@ function RegisterPage() {
         avatar: null,
     });
     const [showPassword, setShowPassword] = useState(false);
+    const navigate = useNavigate()
+    const {SetTokenInLocalStorage} = useUserContext()
 
     // Handle Input Changes
     const handleChange = (e) => {
@@ -27,6 +32,7 @@ function RegisterPage() {
         for (const key in registrationData) {
             formData.append(key, registrationData[key])
         }
+        const toastId = toast.loading("Registration under process")
         try {
             const response = await fetch("http://localhost:8000/api/v1/users/register",{
                 method:"POST",
@@ -34,10 +40,13 @@ function RegisterPage() {
             });
 
             const data = await response.json()
-            console.log(data)
+         
             if(response.ok){
-                console.log("registration successfull")
+                SetTokenInLocalStorage(data?.data.AccessToken);
+                toast.success("registration successfull",{id:toastId})
+                navigate("/chat")
             }else{
+                toast.error(data.message,{id:toastId})
                 throw new Error("Error in response occured")
             }
         } catch (error) {
