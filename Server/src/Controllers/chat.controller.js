@@ -15,22 +15,10 @@ const accessChat = AsyncHandeller(async (req, res, next) => {
       { users: { $elemMatch: { $eq: searchedUserId } } },
     ],
   })
-    .populate({
-      path: "users",
-      select: "-password",
-    })
-    .populate({
-      path: "latestMessage",
-      populate: {
-        path: "sender",
-        select: "name avatar email",
-      },
-    });
+    
 
   if (isChat.length > 0) {
-    return res
-      .status(200)
-      .json(new ApiResponse(200, isChat[0], "chat fetched successfull"));
+    return next({message:"This Chat already exist"})
   }
 
   try {
@@ -71,7 +59,7 @@ const fetchChat = AsyncHandeller(async (req, res, next) => {
         path: "sender",
         select: "name email avatar",
       },
-    });
+    }).sort({createdAt: -1})
 
   if (Chat.length === 0) {
     return next({

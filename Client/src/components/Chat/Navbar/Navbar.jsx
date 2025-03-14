@@ -7,13 +7,12 @@ import toast from "react-hot-toast"
 import SkeletonCard from "./userSkeleton";
 
 function Navbar() {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { Logout, userData } = useUserContext()
   const navigate = useNavigate()
 
   // state variable and functions for search user for chat
-  const { SearchRequestedUser, loading, userList, createChat } = useChatContext();
+  const { SearchRequestedUser, loading, userList, createChat,isSearchOpen, setIsSearchOpen } = useChatContext();
   const [text, settext] = useState("")
 
   const SearchUser = (e) => {
@@ -57,12 +56,13 @@ function Navbar() {
             className="relative flex items-center space-x-2 p-2 rounded-full hover:bg-gray-700 cursor-pointer transition"
             onClick={() => setIsProfileOpen(!isProfileOpen)}
           >
+            <div className="w-10 h-10 ">
             <img
               src={userData?.avatar}
-              width={35}
-              className="rounded-full border-2 border-green-500"  
+              className="rounded-full border-2 w-full h-full object-contain  border-green-500"  
               alt="User Avatar"
             />
+            </div>
             <FaChevronDown
               size={18}
               className="text-green-500 transition"
