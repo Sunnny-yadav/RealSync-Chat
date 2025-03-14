@@ -1,7 +1,7 @@
 import {createBrowserRouter, createRoutesFromElements, Route, RouterProvider} from 'react-router-dom'
 import "./index.css"
-import LoginPage from './components/login'
-import RegisterPage from './components/register'
+import LoginPage from './components/Forms/login'
+import RegisterPage from './components/Forms/register'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
