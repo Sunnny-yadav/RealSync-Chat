@@ -6,14 +6,14 @@ import { useChatContext } from "../../../context/chat.context";
 import toast from "react-hot-toast"
 import SkeletonCard from "./userSkeleton";
 
-function Navbar() {
+function Navbar({setShowChatList, showChatList}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { Logout, userData } = useUserContext()
   const navigate = useNavigate()
-  const { setselectedchat } = useChatContext()
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // state variable and functions for search user for chat
-  const { SearchRequestedUser, loading, userList, createChat, isSearchOpen, setIsSearchOpen } = useChatContext();
+  const { setselectedchat,SearchRequestedUser, loading, userList, createChat, isSearchOpen, setIsSearchOpen, Notification, setNotification, storeSelectedChat, fetchChatMessage } = useChatContext();
   const [text, settext] = useState("")
 
   const SearchUser = (e) => {
@@ -23,7 +23,13 @@ function Navbar() {
     } else {
       SearchRequestedUser(text)
     }
-  }
+  };
+
+  const showAllNotification = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+    // Close profile dropdown if open
+    if (isProfileOpen) setIsProfileOpen(false);
+  };
 
   return (
     <>
@@ -46,11 +52,53 @@ function Navbar() {
 
         {/* Icons & Profile */}
         <div className="flex items-center space-x-4">
-          <FaBell
-            size={20}
-            className="text-green-500 rounded-full cursor-pointer transition"
-            aria-label="Notifications"
-          />
+          {/* Notification Bell with Dropdown */}
+          <div className="relative">
+            <FaBell
+              onClick={showAllNotification}
+              size={20}
+              className="text-green-500 rounded-full cursor-pointer transition"
+              aria-label="Notifications"
+            />
+
+            {/* Show notification badge if there are notifications */}
+            {Notification.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                {Notification.length}
+              </span>
+            )}
+
+            {/* Notification Dropdown */}
+            {isNotificationOpen && (
+              <div className="absolute top-full right-0 mt-1 bg-gray-800 shadow-lg rounded-lg w-64 py-2 z-30">
+                {Notification.length > 0 ? (
+                  Notification.map((notif, index) => (
+                    <div
+                      key={index}
+                      className="px-3 py-2 hover:bg-gray-700 flex items-center cursor-pointer"
+                      onClick={() => {
+                        fetchChatMessage(notif.chat._id);
+                        storeSelectedChat(notif.chat._id);
+                        setShowChatList(!showChatList)
+                        setNotification(Notification.filter(n => n !== notif));
+                        setIsNotificationOpen(false);
+                      }}
+                    >
+                      <img
+                        src={notif.sender.avatar || "https://via.placeholder.com/40"}
+                        alt="User"
+                        className="h-8 w-8 rounded-full mr-2"
+                      />
+                      <span className="text-sm text-white truncate">{notif.sender.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-3 py-2 text-gray-400">No new messages</div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Profile Section */}
           <div
             className="relative flex items-center space-x-2 p-2 rounded-full hover:bg-gray-700 cursor-pointer transition"
@@ -103,6 +151,7 @@ function Navbar() {
           <input
             type="text"
             value={text}
+            id="go"
             onChange={(e) => settext(e.target.value)}
             placeholder="Enter user name..."
             className="bg-transparent outline-none text-white w-full"
@@ -118,14 +167,14 @@ function Navbar() {
           ) : (
             userList?.map((user) => (
               <div
-               key={user._id} 
-               onClick={()=>{
-                createChat({
-                  searchedUserId:user._id
-                });
-                setIsSearchOpen(false); // Close the search drawer after selecting a user
-               }}
-               className="flex items-center gap-3 p-2 bg-gray-700 rounded-lg my-2 cursor-pointer hover:bg-gray-600">
+                key={user._id}
+                onClick={() => {
+                  createChat({
+                    searchedUserId: user._id
+                  });
+                  setIsSearchOpen(false); // Close the search drawer after selecting a user
+                }}
+                className="flex items-center gap-3 p-2 bg-gray-700 rounded-lg my-2 cursor-pointer hover:bg-gray-600">
                 <img
                   src={user.avatar || "https://via.placeholder.com/40"}
                   alt="User Avatar"
@@ -143,7 +192,7 @@ function Navbar() {
 
       {/* Overlay for mobile when search is open */}
       {isSearchOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
           onClick={() => setIsSearchOpen(false)}
         ></div>

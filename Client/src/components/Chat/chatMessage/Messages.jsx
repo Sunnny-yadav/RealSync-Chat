@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import { useChatContext } from "../../../context/chat.context";
 import { useUserContext } from "../../../context/auth.context";
@@ -7,11 +7,17 @@ function Messages() {
   const { selectedChat, chatMessageList, sendChatMessage, istyping, typingIndicator } = useChatContext();
   const [message, setMessage] = useState("");
   const { userData } = useUserContext();
+  const msgRef = useRef();
 
   const typingHandeller = (e)=>{
    setMessage(e.target.value);
    typingIndicator();
   }
+  useEffect(() => {
+    if (msgRef.current) {
+      msgRef.current.scrollTop = msgRef.current.scrollHeight;
+    }
+  }, [chatMessageList]);
 
   // Check if selectedChat and users exist before accessing properties
   const userData_ToBeDisplayed =
@@ -44,7 +50,7 @@ function Messages() {
           </div>
           
           {/* Message Body */}
-          <div className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 space-y-2">
+          <div ref={msgRef} className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 space-y-2">
             {chatMessageList?.length > 0 ? (
               chatMessageList.map((message) => {
                 const isOwnMessage = message?.sender?._id === userData?._id;

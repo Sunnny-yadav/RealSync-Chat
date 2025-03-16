@@ -15,7 +15,7 @@ export default function ChatPage() {
     return (
         <>
             <div className="bg-gray-700 min-h-screen flex flex-col">
-                <Navbar />
+                <Navbar setShowChatList={setShowChatList} showChatList={showChatList} />
                 
                 {/* Added gap-2 md:gap-4 to create spacing between components */}
                 <div className="flex flex-1 relative gap-2 md:gap-4 p-2">
