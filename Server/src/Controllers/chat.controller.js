@@ -1,9 +1,9 @@
 import { AsyncHandeller } from "../utils/AsyncHandeller.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Chat } from "../Models/chat.Modlel.js";
+import { Message } from "../Models/message.Modle.js";
 
-//todo: accesschat will be later updated only to create chat and will check here if it already exist then return 
-
+// "accessChat" is created for creating a new chat with user
 const accessChat = AsyncHandeller(async (req, res, next) => {
   const { searchedUserId } = req.body;
   const { _id } = req.userData;
@@ -14,11 +14,10 @@ const accessChat = AsyncHandeller(async (req, res, next) => {
       { users: { $elemMatch: { $eq: _id } } },
       { users: { $elemMatch: { $eq: searchedUserId } } },
     ],
-  })
-    
+  });
 
   if (isChat.length > 0) {
-    return next({message:"This Chat already exist"})
+    return next({ message: "This Chat already exist" });
   }
 
   try {
@@ -59,7 +58,8 @@ const fetchChat = AsyncHandeller(async (req, res, next) => {
         path: "sender",
         select: "name email avatar",
       },
-    }).sort({createdAt: -1})
+    })
+    .sort({ createdAt: -1 });
 
   if (Chat.length === 0) {
     return next({
@@ -72,4 +72,68 @@ const fetchChat = AsyncHandeller(async (req, res, next) => {
     .json(new ApiResponse(200, chats, "users chats fetched successfully"));
 });
 
-export { accessChat, fetchChat };
+const sendMessage = AsyncHandeller(async (req, res, next) => {
+  const { chatId } = req.params;
+  const { _id } = req.userData;
+  const { content } = req.body;
+
+  if (!chatId || !_id) {
+    return next({
+      message: "Server error! plz try after some time",
+    });
+  }
+
+  if (!content || content === "") {
+    return next({
+      message: "text filed is empty",
+    });
+  }
+
+  try {
+    const createdMsg = await Message.create({
+      sender: _id,
+      content,
+      chat: chatId,
+    });
+
+    await Chat.findByIdAndUpdate(
+      {
+        _id: chatId,
+      },
+      { latestMessage: createdMsg._id },
+      { new: true }
+    );
+
+    const messagetobeSent = await Message.findOne({
+      content
+    }).populate("sender", "name email avatar");
+
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, messagetobeSent, "message added Successfully"));
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+const fetchMessagesOfChat = AsyncHandeller(async (req, res, next) => {
+  const { chatId } = req.params;
+
+  const messageList = await Message.find({
+    chat: chatId,
+  }).populate("sender", "name email avatar").sort({createdAt:1});
+
+  if (messageList.length === 0) {
+    return res.json({
+      status:200,
+      message: "no message exist for these chat",
+    });
+  }
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, messageList, "message fetch successfull"));
+});
+
+export { accessChat, fetchChat, sendMessage, fetchMessagesOfChat };
