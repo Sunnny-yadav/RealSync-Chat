@@ -4,9 +4,14 @@ import { useChatContext } from "../../../context/chat.context";
 import { useUserContext } from "../../../context/auth.context";
 
 function Messages() {
-  const { selectedChat, chatMessageList, sendChatMessage } = useChatContext();
+  const { selectedChat, chatMessageList, sendChatMessage, istyping, typingIndicator } = useChatContext();
   const [message, setMessage] = useState("");
   const { userData } = useUserContext();
+
+  const typingHandeller = (e)=>{
+   setMessage(e.target.value);
+   typingIndicator();
+  }
 
   // Check if selectedChat and users exist before accessing properties
   const userData_ToBeDisplayed =
@@ -69,13 +74,22 @@ function Messages() {
               <div className="text-gray-400 text-center">No messages yet.</div>
             )}
           </div>
+
+          {/* typing indicator  */}
+          {
+            istyping ?    <div className="flex items-center gap-3 bg-gray-800 px-4 py-3 rounded-xl max-w-fit shadow-lg">
+            <div className="w-2 h-2 bg-blue-300 rounded-full animate-ping"></div>
+            <div className="w-2 h-2 bg-pink-300 rounded-full animate-ping delay-100"></div>
+            <div className="w-2 h-2 bg-green-300 rounded-full animate-ping delay-200"></div>
+          </div>:<div></div>
+          }
           
           {/* Footer */}
           <div className="p-4 bg-gray-800 flex items-center gap-2 border-t border-gray-700 rounded-b-none md:rounded-b-xl">
             <input
               type="text"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={typingHandeller}
               placeholder="Type a message..."
               className="flex-1 p-2 bg-gray-700 text-white rounded-lg outline-none"
             />

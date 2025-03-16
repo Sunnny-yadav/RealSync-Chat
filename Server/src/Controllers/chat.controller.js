@@ -2,6 +2,7 @@ import { AsyncHandeller } from "../utils/AsyncHandeller.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Chat } from "../Models/chat.Modlel.js";
 import { Message } from "../Models/message.Modle.js";
+import { User } from "../Models/user.Modle.js";
 
 // "accessChat" is created for creating a new chat with user
 const accessChat = AsyncHandeller(async (req, res, next) => {
@@ -90,10 +91,17 @@ const sendMessage = AsyncHandeller(async (req, res, next) => {
   }
 
   try {
-    const createdMsg = await Message.create({
+    let createdMsg = await Message.create({
       sender: _id,
       content,
       chat: chatId,
+    });
+
+    createdMsg = await createdMsg.populate("sender", "name avatar")
+    createdMsg = await createdMsg.populate("chat");
+    createdMsg = await User.populate(createdMsg, {
+      path: "chat.users",
+      select: "name avatar email",
     });
 
     await Chat.findByIdAndUpdate(
@@ -103,15 +111,10 @@ const sendMessage = AsyncHandeller(async (req, res, next) => {
       { latestMessage: createdMsg._id },
       { new: true }
     );
-
-    const messagetobeSent = await Message.findOne({
-      content
-    }).populate("sender", "name email avatar");
-
-
+   
     return res
       .status(200)
-      .json(new ApiResponse(200, messagetobeSent, "message added Successfully"));
+      .json(new ApiResponse(200, createdMsg, "message added Successfully"));
   } catch (error) {
     console.log(error);
   }
@@ -122,7 +125,7 @@ const fetchMessagesOfChat = AsyncHandeller(async (req, res, next) => {
 
   const messageList = await Message.find({
     chat: chatId,
-  }).populate("sender", "name email avatar").sort({createdAt:1});
+  }).populate("sender", "name email avatar").populate("chat").sort({createdAt:1});
 
   if (messageList.length === 0) {
     return res.json({

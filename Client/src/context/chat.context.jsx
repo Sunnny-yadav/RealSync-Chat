@@ -1,10 +1,17 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useUserContext } from "./auth.context";
 import toast from "react-hot-toast";
+
+//below imports belong to socket.io
+import io from 'socket.io-client'
+
+const ENDPOINT="http://localhost:8000";
+let socket;
 
 const chatContext = createContext()
 
 export const ChatProvider = ({ children }) => {
+    //below state variables are related directly to chat 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [loading, setloading] = useState(false);
     const { Token } = useUserContext();
@@ -13,6 +20,55 @@ export const ChatProvider = ({ children }) => {
     const [selectedChat, setselectedchat] = useState({});
     const [chatMessageList, setchatMessageList] = useState([])
 
+    //below state variables are for socket
+    const {userData} = useUserContext();
+    const [socketConntected, setsocektConnected] = useState(false);
+    const [typing, settyping] = useState(false);
+    const [istyping, setIstyping] = useState(false);
+
+    // below code is belonging to socket.io programming
+    useEffect(()=>{
+        if(Object.keys(userData).length > 0){
+            socket = io(ENDPOINT);
+            socket.emit("setUp",userData);
+            socket.on("connected",()=> setsocektConnected(true));
+            socket.on("typing",()=> setIstyping(true))
+            socket.on("stop typing", ()=> setIstyping(false))
+        }
+    },[userData])
+
+    useEffect(()=>{
+        if(!socket) return 
+
+        socket.on("message received",(newMessgeReceivedObj)=>{
+            if(!selectedChat || selectedChat._id !== newMessgeReceivedObj.chat._id ){
+                // add to notification
+            }else{
+                setchatMessageList((prevMsg)=> [...prevMsg, newMessgeReceivedObj])
+            }
+        })
+    },[selectedChat]);
+
+    const typingIndicator = ()=>{
+        if(!socketConntected) return
+
+        if(!typing){
+            settyping(true)
+            socket.emit("typing",selectedChat._id);
+        }
+
+        const lastTypingTime = new Date().getTime();
+        const timerLength = 2000;
+        setTimeout(() => {
+            const currenttime = new Date().getTime();
+            const timerDifference = currenttime - lastTypingTime;
+
+            if(timerDifference >= timerLength && typing){
+                settyping(false);
+                socket.emit("stop typing",selectedChat._id)
+            }
+        }, timerLength);
+    }
 
     // below functions are just for performing certain task
     const insert_NewCreated_Chat = (chatObj) => {
@@ -103,6 +159,7 @@ export const ChatProvider = ({ children }) => {
     };
 
     const fetchChatMessage = async(chatId)=>{
+        
         try {
             const result = await fetch(`http://localhost:8000/api/v1/chats/${chatId}/getMessages`,{
                 method:"GET",
@@ -118,6 +175,7 @@ export const ChatProvider = ({ children }) => {
                 }else{
                     setchatMessageList([])
                 }
+                socket.emit("join room",chatId)
             }else{
                 toast.error(response.message)
                 throw new Error("error occured while fetching the message")
@@ -140,9 +198,9 @@ export const ChatProvider = ({ children }) => {
             });
 
             const response = await result.json();
-            
+           
             if(result.ok){
-                console.log(chatMessageList)
+                socket.emit("new message",response.data)
                 setchatMessageList((prevMsg)=> [...prevMsg, response.data])
             }else{
                 toast.error(response.message)
@@ -152,6 +210,7 @@ export const ChatProvider = ({ children }) => {
             console.error("chatContext:: sendChatMessage::",error)
         }
     };
+
 
 
     return (
@@ -169,7 +228,11 @@ export const ChatProvider = ({ children }) => {
                 setselectedchat,
                 fetchChatMessage,
                 chatMessageList,
-                sendChatMessage
+                sendChatMessage,
+
+                //variables of socekt 
+               istyping,
+               typingIndicator
             }}>
                 {children}
             </chatContext.Provider>
