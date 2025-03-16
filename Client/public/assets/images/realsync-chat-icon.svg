@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Gradient background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A2980" />
+      <stop offset="100%" stop-color="#26D0CE" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Base circle with gradient -->
+  <circle cx="100" cy="100" r="90" fill="url(#bgGradient)" />
+  
+  <!-- Overlapping chat bubbles representing synchronization -->
+  <path d="M65 75 L65 115 L80 115 L95 130 L95 115 L125 115 L125 75 Z" fill="#ffffff" opacity="0.9" />
+  <path d="M75 85 L75 125 L105 125 L105 140 L120 125 L135 125 L135 85 Z" fill="#ffffff" opacity="0.9" />
+  
+  <!-- Connection dots forming a circular pattern -->
+  <circle cx="100" cy="65" r="5" fill="#ffffff" />
+  <circle cx="135" cy="80" r="5" fill="#ffffff" />
+  <circle cx="135" cy="120" r="5" fill="#ffffff" />
+  <circle cx="100" cy="135" r="5" fill="#ffffff" />
+  <circle cx="65" cy="120" r="5" fill="#ffffff" />
+  <circle cx="65" cy="80" r="5" fill="#ffffff" />
+  
+  <!-- Connecting lines representing real-time sync -->
+  <line x1="100" y1="65" x2="135" y2="80" stroke="#ffffff" stroke-width="2" />
+  <line x1="135" y1="80" x2="135" y2="120" stroke="#ffffff" stroke-width="2" />
+  <line x1="135" y1="120" x2="100" y2="135" stroke="#ffffff" stroke-width="2" />
+  <line x1="100" y1="135" x2="65" y2="120" stroke="#ffffff" stroke-width="2" />
+  <line x1="65" y1="120" x2="65" y2="80" stroke="#ffffff" stroke-width="2" />
+  <line x1="65" y1="80" x2="100" y2="65" stroke="#ffffff" stroke-width="2" />
+  
+  <!-- Central pulse circle -->
+  <circle cx="100" cy="100" r="15" fill="#ffffff">
+    <animate attributeName="r" values="15;20;15" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="opacity" values="0.8;0.5;0.8" dur="2s" repeatCount="indefinite" />
+  </circle>
+</svg>
